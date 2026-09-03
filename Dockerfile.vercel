@@ -36,3 +36,12 @@ ENV SERVER_NAME=:80
 
 # Serve Laravel public directory
 CMD ["frankenphp", "php-server", "-r", "public/"]
+
+# Install Node.js
+RUN apt-get update && apt-get install -y nodejs npm
+
+# Install frontend dependencies
+RUN npm install
+
+# Build Vite assets
+RUN npm run build
