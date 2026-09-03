@@ -1,0 +1,38 @@
+FROM dunglas/frankenphp:php8.3
+
+# Install required PHP extensions
+RUN install-php-extensions \
+    pdo_mysql \
+    mbstring \
+    bcmath \
+    intl \
+    zip \
+    opcache
+
+WORKDIR /app
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Copy Laravel project
+COPY . .
+
+# Install PHP dependencies
+RUN composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-interaction \
+    --prefer-dist
+
+# Create Laravel storage symlink
+RUN php artisan storage:link || true
+
+# Laravel production settings
+ENV APP_ENV=production
+ENV APP_DEBUG=false
+
+# Vercel/FrankenPHP server
+ENV SERVER_NAME=:80
+
+# Serve Laravel public directory
+CMD ["frankenphp", "php-server", "-r", "public/"]
